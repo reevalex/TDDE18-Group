@@ -9,6 +9,11 @@ test: catch_amalgamated.o test_time.cc time.cc time.h
 	./test
 
 clean:
-	rm -f test_time *.o *.gch
+	rm -f test *.o *.gch *.out
+
+
+check:
+	@! grep "using namespace" *.h
+	@! grep "#include.*cc" *.cc
 
 .PHONY: test clean catch

@@ -2,6 +2,10 @@
 #include <sstream>
 #include <iomanip>
 
+#include "time.h" // header guards sanity check
+
+using namespace std;
+
 Time operator+(Time const &t, int seconds)
 {
     int total_seconds = t.hour * 3600 + t.minute * 60 + t.second;
@@ -20,7 +24,7 @@ Time operator+(Time const &t, int seconds)
 
 Time operator+(int seconds, Time const &t)
 {
-    return t + seconds; // Reuse operator+ by swapping order
+    return t + seconds; // Reuse operator+
 }
 
 Time operator-(Time const &t, int seconds)
@@ -47,9 +51,9 @@ Time &Time::operator++()
 
 Time Time::operator++(int)
 {
-    Time old_value = *this;
+    Time result = *this;
     ++(*this);
-    return old_value;
+    return result;
 }
 
 Time &Time::operator--()
@@ -60,9 +64,9 @@ Time &Time::operator--()
 
 Time Time::operator--(int)
 {
-    Time old_value = *this;
+    Time result = *this;
     --(*this);
-    return old_value;
+    return result;
 }
 
 bool operator==(Time const &lhs, Time const &rhs)
@@ -74,7 +78,7 @@ bool operator==(Time const &lhs, Time const &rhs)
 
 bool operator!=(Time const &lhs, Time const &rhs)
 {
-    return !(lhs == rhs);
+    return !(lhs == rhs); // Reuse equality (==)
 }
 
 bool operator<(Time const &lhs, Time const &rhs)
@@ -102,41 +106,39 @@ bool operator<(Time const &lhs, Time const &rhs)
 
 bool operator<=(Time const &lhs, Time const &rhs)
 {
-    return (lhs < rhs) || (lhs == rhs);
+    return (lhs < rhs) || (lhs == rhs); // Reuse equality (==) and less than (<)
 }
 
 bool operator>(Time const &lhs, Time const &rhs)
 {
-    return !(lhs <= rhs);
+    return !(lhs <= rhs); // Reuse less than or equal (<=)
 }
 
 bool operator>=(Time const &lhs, Time const &rhs)
 {
-    return !(lhs < rhs);
+    return !(lhs < rhs); // Reuse less than(<)
 }
 
 ostream &operator<<(ostream &os, Time const &t)
 {
-    os << to_string(t);
+    os << to_string(t); // HH:MM:SS format
     return os;
 }
 
 istream &operator>>(istream &is, Time &t)
 {
     int hour, minute, second;
-    char c1, c2;
 
-    is >> hour >> c1 >> minute >> c2 >> second;
+    is >> hour >> minute >> second;
 
-    if (is.fail() || c1 != ':' || c2 != ':')
+    if (is.fail())
     {
-        is.setstate(ios::failbit);
         return is;
     }
 
     Time t_temp{hour, minute, second};
 
-    if (!is_valid(t))
+    if (!is_valid(t_temp))
     {
         is.setstate(ios::failbit);
         return is;
@@ -176,7 +178,7 @@ string to_string(Time const &t, bool format_12)
 {
     ostringstream oss;
 
-    if (!format_12)
+    if (!format_12) // default 24-h format
     {
         oss << setfill('0') << setw(2) << t.hour << ":"
             << setfill('0') << setw(2) << t.minute << ":"
@@ -214,3 +216,8 @@ string to_string(Time const &t, bool format_12)
 
     return oss.str();
 }
+
+// int main()
+// {
+//     return 0;
+// }

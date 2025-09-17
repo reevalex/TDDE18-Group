@@ -2,6 +2,8 @@
 #include "time.h"
 #include <sstream>
 
+using namespace std;
+
 TEST_CASE("Time struct construction")
 {
     Time t{11, 22, 33};
@@ -135,11 +137,11 @@ TEST_CASE("Increment: ++ prefix and postfix")
 
     SECTION("Postfix increment (t++)")
     {
-        // Time t{10, 20, 30};
-        // Time result = t++; // assign t to result then increment
-        // CHECK(to_string(t) == "10:20:31");
-        // CHECK(result == Time{10, 20, 31});
-        // cout << to_string(result) << endl;
+        Time t{10, 20, 30};
+        Time result = t++; // assign t to result then increment
+        CHECK(to_string(t) == "10:20:31");
+        CHECK(result == Time{10, 20, 30});
+        cout << to_string(result) << endl;
     }
 }
 
@@ -156,11 +158,11 @@ TEST_CASE("Decrement: -- prefix and postfix")
 
     SECTION("Postfix decrement (t--)")
     {
-        // Time t{10, 20, 30};
-        // Time result = t--; // assign t to result then decrement
-        // CHECK(to_string(t) == "10:20:29");
-        // CHECK(result == Time{10, 20, 29});
-        // cout << to_string(result) << endl;
+        Time t{10, 20, 30};
+        Time result = t--; // assign t to result then decrement
+        CHECK(to_string(t) == "10:20:29");
+        CHECK(result == Time{10, 20, 30});
+        cout << to_string(result) << endl;
     }
 }
 
@@ -253,8 +255,83 @@ TEST_CASE("Comparison operators")
 
 TEST_CASE("Stream input: >>")
 {
+    SECTION("Valid input formats")
+    {
+        istringstream iss("10 20 30");
+        Time t{};
+        iss >> t;
+        CHECK_FALSE(iss.fail());
+        CHECK(to_string(t) == "10:20:30");
+    }
+
+    SECTION("Invalid formats - should set fail bit")
+    {
+        Time t{12, 34, 56};
+        istringstream iss;
+
+        // Wrong separator
+        iss.clear();
+        iss.str("10-20-30");
+        iss >> t;
+        CHECK(iss.fail());
+        CHECK(to_string(t) == "12:34:56");
+
+        // Not numbers
+        iss.clear();
+        iss.str("ab:cd:ef");
+        iss >> t;
+        CHECK(iss.fail());
+        CHECK(to_string(t) == "12:34:56");
+    }
+
+    SECTION("Invalid values - should set fail bit")
+    {
+        Time t{12, 34, 56};
+        istringstream iss;
+
+        // Hour too large
+        iss.str("24:00:00");
+        iss >> t;
+        CHECK(iss.fail());
+        CHECK(to_string(t) == "12:34:56");
+
+        // Negative values
+        iss.clear();
+        iss.str("-1:20:30");
+        iss >> t;
+        CHECK(iss.fail());
+        CHECK(to_string(t) == "12:34:56");
+    }
 }
 
 TEST_CASE("Stream output: <<")
 {
+    SECTION("Basic output formatting")
+    {
+        ostringstream oss;
+
+        Time t1{9, 5, 3};
+        oss << t1;
+        CHECK(oss.str() == "09:05:03");
+
+        oss.str(""); // Clear the stream
+        Time t2{23, 59, 59};
+        oss << t2;
+        CHECK(oss.str() == "23:59:59");
+
+        oss.str("");
+        Time t3{0, 0, 0};
+        oss << t3;
+        CHECK(oss.str() == "00:00:00");
+    }
+
+    SECTION("Multiple outputs to same stream")
+    {
+        ostringstream oss;
+        Time t1{10, 20, 30};
+        Time t2{11, 21, 31};
+
+        oss << t1 << " and " << t2;
+        CHECK(oss.str() == "10:20:30 and 11:21:31");
+    }
 }

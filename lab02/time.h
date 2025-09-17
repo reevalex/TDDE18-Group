@@ -3,7 +3,6 @@
 
 #include <string>
 #include <iostream>
-using namespace std;
 
 struct Time
 {
@@ -30,11 +29,11 @@ bool operator<=(Time const &lhs, Time const &rhs);
 bool operator>(Time const &lhs, Time const &rhs);
 bool operator>=(Time const &lhs, Time const &rhs);
 
-ostream &operator<<(ostream &os, Time const &t);
-istream &operator>>(istream &is, Time &t);
+std::ostream &operator<<(std::ostream &os, Time const &t);
+std::istream &operator>>(std::istream &is, Time &t);
 
 bool is_valid(Time const &t);
 bool is_am(Time const &t);
-string to_string(Time const &t, bool format_12h = false);
+std::string to_string(Time const &t, bool format_12h = false);
 
 #endif
