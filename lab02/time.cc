@@ -6,10 +6,17 @@
 
 using namespace std;
 
-Time operator+(Time const &t, int seconds)
+int time_to_seconds(Time const &t)
 {
-    int total_seconds = t.hour * 3600 + t.minute * 60 + t.second;
-    total_seconds += seconds;
+    return t.hour * 3600 + t.minute * 60 + t.second;
+}
+
+Time seconds_to_time(int total_seconds)
+{
+    while (total_seconds < 0)
+    {
+        total_seconds += 86400;
+    }
 
     total_seconds %= 86400; // Ensure to stay within 24h period
 
@@ -20,6 +27,12 @@ Time operator+(Time const &t, int seconds)
     result.second = total_seconds % 60; // What's left in seconds
 
     return result;
+}
+
+Time operator+(Time const &t, int seconds)
+{
+    int total_seconds{time_to_seconds(t) + seconds};
+    return seconds_to_time(total_seconds);
 }
 
 Time operator+(int seconds, Time const &t)
@@ -29,43 +42,33 @@ Time operator+(int seconds, Time const &t)
 
 Time operator-(Time const &t, int seconds)
 {
-    int total_seconds = t.hour * 3600 + t.minute * 60 + t.second;
-    total_seconds -= seconds;
+    int total_seconds{time_to_seconds(t) - seconds};
+    return seconds_to_time(total_seconds);
+}
 
-    total_seconds %= 86400; // Ensure to stay within 24h period
+Time operator++(Time &t)
+{
+    t = t + 1;
+    return t;
+}
 
-    Time result;
-    result.hour = total_seconds / 3600; // How many whole hours
-    total_seconds %= 3600;              // Remove the hours from total
-    result.minute = total_seconds / 60; // How many whole minutes
-    result.second = total_seconds % 60; // What's left in seconds
-
+Time operator++(Time &t, int)
+{
+    Time result = t;
+    ++t;
     return result;
 }
 
-Time &Time::operator++()
+Time operator--(Time &t)
 {
-    *this = *this + 1;
-    return *this;
+    t = t - 1;
+    return t;
 }
 
-Time Time::operator++(int)
+Time operator--(Time &t, int)
 {
-    Time result = *this;
-    ++(*this);
-    return result;
-}
-
-Time &Time::operator--()
-{
-    *this = *this - 1;
-    return *this;
-}
-
-Time Time::operator--(int)
-{
-    Time result = *this;
-    --(*this);
+    Time result = t;
+    --t;
     return result;
 }
 
@@ -83,25 +86,7 @@ bool operator!=(Time const &lhs, Time const &rhs)
 
 bool operator<(Time const &lhs, Time const &rhs)
 {
-    if (lhs.hour < rhs.hour)
-    {
-        return true;
-    }
-    if (lhs.hour > rhs.hour)
-    {
-        return false;
-    }
-
-    if (lhs.minute < rhs.minute)
-    {
-        return true;
-    }
-    if (lhs.minute > rhs.minute)
-    {
-        return false;
-    }
-
-    return lhs.second < rhs.second;
+    return time_to_seconds(lhs) < time_to_seconds(rhs);
 }
 
 bool operator<=(Time const &lhs, Time const &rhs)
@@ -128,11 +113,11 @@ ostream &operator<<(ostream &os, Time const &t)
 istream &operator>>(istream &is, Time &t)
 {
     int hour, minute, second;
+    char c1, c2;
 
-    is >> hour >> minute >> second;
-
-    if (is.fail())
+    if (!(is >> hour >> c1 >> minute >> c2 >> second) || c1 != ':' || c2 != ':')
     {
+        is.setstate(ios::failbit);
         return is;
     }
 
@@ -145,7 +130,6 @@ istream &operator>>(istream &is, Time &t)
     }
 
     t = t_temp;
-
     return is;
 }
 
@@ -189,26 +173,31 @@ string to_string(Time const &t, bool format_12)
         int hour;
         string period;
 
-        if (t.hour == 0)
+        if (is_am(t))
         {
-            hour = 12;
+            if (t.hour == 0)
+            {
+                hour = 12;
+            }
+            else
+            {
+                hour = t.hour;
+            }
             period = " am";
-        }
-        else if (t.hour < 12)
-        {
-            hour = t.hour;
-            period = " am";
-        }
-        else if (t.hour == 12)
-        {
-            hour = t.hour;
-            period = " pm";
         }
         else
         {
-            hour = t.hour - 12;
+            if (t.hour == 12)
+            {
+                hour = 12;
+            }
+            else
+            {
+                hour = t.hour - 12;
+            }
             period = " pm";
         }
+
         oss << setfill('0') << setw(2) << hour << ":"
             << setfill('0') << setw(2) << t.minute << ":"
             << setfill('0') << setw(2) << t.second << period;

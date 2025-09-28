@@ -9,18 +9,16 @@ struct Time
     int hour;
     int minute;
     int second;
-
-    Time &operator++();
-    Time operator++(int);
-
-    Time &operator--();
-    Time operator--(int);
 };
 
 Time operator+(Time const &t, int seconds); // Time + Seconds
 Time operator+(int seconds, Time const &t); // Seconds + Time
-
 Time operator-(Time const &t, int seconds); // Time - seconds
+
+Time operator++(Time &t);
+Time operator++(Time &t, int);
+Time operator--(Time &t);
+Time operator--(Time &t, int);
 
 bool operator==(Time const &lhs, Time const &rhs);
 bool operator!=(Time const &lhs, Time const &rhs);
